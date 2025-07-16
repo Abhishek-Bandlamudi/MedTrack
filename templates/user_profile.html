@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      background-size: 300% 300%;
+      animation: gradientMove 10s ease infinite;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .glass-card {
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .neon-text {
+      text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff, 0 0 20px #00f7ff;
+    }
+    .glow-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .glow-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, #00f7ff, #00d4ff, #007bff);
+      transform: rotate(25deg);
+      transition: all 0.4s ease;
+      opacity: 0.2;
+    }
+    .glow-btn:hover::before {
+      top: 0;
+      left: 0;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center text-white">
+
+  <div class="glass-card p-10 w-96 text-center">
+    <!-- User Icon -->
+    <div class="mb-6">
+      <svg class="mx-auto w-20 h-20 text-blue-300 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zM4 20c0-2.21 3.58-4 8-4s8 1.79 8 4v1H4v-1z" />
+      </svg>
+    </div>
+
+    <!-- Neon Title -->
+    <h1 class="text-3xl font-bold neon-text mb-4">User Profile</h1>
+
+    <!-- User Info -->
+    <div class="space-y-2 text-lg">
+      <p><span class="font-semibold text-blue-200">👤 Name:</span> {{ username }}</p>
+      <p><span class="font-semibold text-blue-200">📧 Email:</span> {{ email }}</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="mt-8 flex flex-col space-y-4">
+      <a href="/dashboard" class="glow-btn bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-transform duration-300">
+        ← Back to Dashboard
+      </a>
+
+      <form id="logoutForm" method="POST">
+        <button type="submit" class="glow-btn bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:scale-105 transition-transform duration-300">
+          🚪 Logout
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Handle logout with fetch
+    const logoutForm = document.getElementById('logoutForm');
+    logoutForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      fetch('/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }).then(response => {
+        if (response.ok) {
+          window.location.href = '/';
+        } else {
+          alert("Logout failed. Try again.");
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        alert("Logout error.");
+      });
+    });
+  </script>
+
+</body>
+</html>

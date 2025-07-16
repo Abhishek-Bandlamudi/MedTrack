@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MedTrack - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Smooth modal animation */
+    #loginModal {
+      transition: opacity 0.3s ease;
+    }
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <header class="bg-gradient-to-r from-indigo-700 to-purple-700 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="text-3xl font-extrabold text-white tracking-wide flex items-center gap-2">
+        🏥 MedTrack
+      </div>
+      <a href="{{ url_for('login_page') }}"
+   class="bg-yellow-400 text-indigo-900 px-6 py-2 rounded-lg hover:bg-yellow-300 transition font-bold">
+   Login
+</a>
+
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+<section class="bg-gradient-to-br from-violet-100 via-blue-50 to-sky-100 py-24 relative">
+  <div class="absolute inset-0 bg-gradient-to-t from-white/30 to-transparent"></div>
+  <div class="max-w-5xl mx-auto text-center px-4 relative">
+    <h1 class="text-5xl md:text-6xl font-extrabold text-indigo-800 mb-6 leading-tight drop-shadow-sm">
+      Smarter Healthcare with <span class="text-purple-600">MedTrack</span>
+    </h1>
+    <p class="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto mb-8">
+      Manage medications, records, appointments, and inventory seamlessly. MedTrack empowers hospitals, clinics, and patients through cloud innovation.
+    </p>
+    
+    <!-- Button -->
+    <button 
+      id="getStartedBtn"
+      class="px-8 py-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-500 hover:scale-105 transition transform"
+    >
+      Get Started
+    </button>
+  </div>
+</section>
+
+<!-- JavaScript -->
+<script>
+  document.getElementById('getStartedBtn').addEventListener('click', function() {
+    // ✅ Redirect to login page
+    window.location.href = '/login'; // change this to your actual login URL
+  });
+</script>
+
+
+  <!-- Features Section -->
+  <section class="bg-gradient-to-b from-white to-indigo-50 py-20">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h2 class="text-4xl font-bold text-indigo-800 mb-12">Why Choose MedTrack?</h2>
+      <div class="grid md:grid-cols-3 gap-10">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition transform border-t-4 border-blue-400">
+          <div class="text-blue-500 text-5xl mb-4">💊</div>
+          <h3 class="text-xl font-semibold text-blue-700 mb-3">Track Medications</h3>
+          <p class="text-gray-600">Never miss a dose. Set reminders and manage your medications effortlessly.</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition transform border-t-4 border-green-400">
+          <div class="text-green-500 text-5xl mb-4">🗂️</div>
+          <h3 class="text-xl font-semibold text-green-700 mb-3">Patient Records</h3>
+          <p class="text-gray-600">Secure cloud-based storage for easy access to vital health data anytime.</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition transform border-t-4 border-pink-400">
+          <div class="text-pink-500 text-5xl mb-4">📅</div>
+          <h3 class="text-xl font-semibold text-pink-700 mb-3">Smart Appointments</h3>
+          <p class="text-gray-600">Hassle-free scheduling for check-ups, follow-ups, and reminders.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="bg-gradient-to-r from-indigo-600 to-purple-600 py-16 text-center text-white">
+    <h2 class="text-4xl font-bold mb-4">Ready to Transform Your Healthcare Experience?</h2>
+    <p class="text-lg mb-8">Join MedTrack today and make managing your health simple & smart.</p>
+    <button class="bg-yellow-400 text-indigo-900 px-8 py-3 rounded-full shadow-lg hover:bg-yellow-300 hover:scale-105 transition transform">
+      Sign Up Now
+    </button>
+  </section>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative fade-in">
+      <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+      <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6">Login to MedTrack</h2>
+
+      <!-- Toggle Buttons -->
+      <div class="flex justify-center gap-4 mb-6">
+        <button type="button" onclick="toggleForm('existing')" id="existingBtn" class="px-5 py-2 rounded-full bg-cyan-600 text-white font-semibold shadow-md">Existing User</button>
+        <button type="button" onclick="toggleForm('new')" id="newBtn" class="px-5 py-2 rounded-full bg-gray-200 text-gray-800 font-semibold">New User</button>
+      </div>
+
+      <!-- Existing User Form -->
+      <form id="existingForm" method="POST" action="/login-existing" class="space-y-4">
+        <input name="email" type="email" placeholder="Email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" />
+        <input name="password" type="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" />
+        <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-cyan-700 text-white py-2 rounded-full hover:from-cyan-600 hover:to-cyan-800 transition">Login</button>
+      </form>
+
+      <!-- New User Form -->
+      <form id="newForm" method="POST" action="/register" class="space-y-4 hidden">
+        <input name="name" type="text" placeholder="Full Name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500" />
+        <input name="email" type="email" placeholder="Email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500" />
+        <input name="password" type="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500" />
+        <button type="submit" class="w-full bg-gradient-to-r from-rose-400 to-rose-600 text-white py-2 rounded-full hover:from-rose-500 hover:to-rose-700 transition">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-100 border-t py-6 text-center text-sm text-gray-500">
+    © 2025 <span class="font-semibold text-indigo-700">MedTrack</span>. All rights reserved.
+  </footer>
+
+  <!-- Modal Script -->
+  <script>
+    const modal = document.getElementById('loginModal');
+    const loginButton = document.getElementById('loginButton');
+    const existingBtn = document.getElementById('existingBtn');
+    const newBtn = document.getElementById('newBtn');
+    const existingForm = document.getElementById('existingForm');
+    const newForm = document.getElementById('newForm');
+
+    loginButton.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      modal.classList.add('fade-in');
+    });
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    function toggleForm(type) {
+      const activeExisting = 'bg-cyan-600 text-white shadow-md';
+      const inactiveExisting = 'bg-gray-200 text-gray-800';
+      const activeNew = 'bg-amber-300 text-gray-900 shadow-md';
+      const inactiveNew = 'bg-gray-200 text-gray-800';
+
+      if (type === 'existing') {
+        existingForm.classList.remove('hidden');
+        newForm.classList.add('hidden');
+        existingBtn.className = `px-5 py-2 rounded-full font-semibold ${activeExisting}`;
+        newBtn.className = `px-5 py-2 rounded-full font-semibold ${inactiveNew}`;
+      } else {
+        newForm.classList.remove('hidden');
+        existingForm.classList.add('hidden');
+        newBtn.className = `px-5 py-2 rounded-full font-semibold ${activeNew}`;
+        existingBtn.className = `px-5 py-2 rounded-full font-semibold ${inactiveExisting}`;
+      }
+    }
+  </script>
+</body>
+</html>

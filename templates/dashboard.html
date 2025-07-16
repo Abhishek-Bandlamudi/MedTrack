@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MedTrack Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 text-gray-800 min-h-screen flex">
+
+  <!-- Sidebar -->
+<aside class="w-64 bg-gradient-to-b from-blue-600 to-purple-700 text-white flex flex-col p-6 items-center text-center">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold">🏥 MedTrack</h1>
+    <p class="mt-2 text-sm opacity-90">
+      Welcome, <span class="font-semibold">{{ username }}</span>
+    </p>
+  </div>
+
+  <!-- Centered Navigation -->
+  <nav class="flex flex-col gap-4 w-full items-center">
+    
+    <!-- Add Medicine Button -->
+    <a href="/add-medicine" 
+       class="w-4/5 bg-white text-blue-700 font-medium px-4 py-2 rounded shadow hover:bg-blue-100 transition text-center">
+      + Add Medicine
+    </a>
+
+    <!-- User Info Button -->
+    <a href="/user" 
+       class="w-4/5 bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded text-white shadow transition text-center">
+      👤 User Info
+    </a>
+
+    <!-- Logout Button -->
+    <a href="/logout" 
+       class="mt-auto w-4/5 inline-flex items-center justify-center px-4 py-2 
+              rounded-lg font-medium text-white bg-gradient-to-r from-red-500 to-pink-500 
+              shadow-md hover:shadow-lg hover:from-red-600 hover:to-pink-600 
+              transition-all duration-300 ease-in-out text-center">
+      🚪 Logout
+    </a>
+
+  </nav>
+</aside>
+
+
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8 space-y-8">
+
+    <!-- Top Cards Section -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Today's Doses -->
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition">
+        <p class="text-lg font-semibold text-blue-600">📆 Today’s Doses</p>
+        <p class="text-5xl font-bold text-purple-600 mt-3">{{ today_dose_count }}</p>
+      </div>
+
+<!-- Streak Tracker -->
+<div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+  <p class="text-lg font-semibold text-center text-purple-600">🔥 Today's Medicines</p>
+
+  <ul class="mt-4 space-y-3">
+    {% for med in today_meds %}
+      <li class="flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200">
+        <input type="checkbox" class="w-5 h-5 text-green-500 rounded focus:ring-green-400" />
+        <span>💊 <strong>{{ med.medicine_name }}</strong> at {{ med.dose_time }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if not today_meds %}
+    <p class="text-center text-gray-500 italic mt-4">No medicines scheduled today</p>
+  {% endif %}
+</div>
+
+
+      <!-- Doctor Info -->
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition">
+        <p class="text-lg font-semibold text-blue-600 mb-4">👨‍⚕️ Doctor Info</p>
+        {% if doctor %}
+          <button onclick="showDoctorModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            View Details
+          </button>
+        {% else %}
+          <a href="/doctor-info" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            Add Details
+          </a>
+        {% endif %}
+      </div>
+
+    </section>
+
+    <!-- Medications + Reminders in 2 Columns -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+<!-- Medication List -->
+<div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition">
+  <h2 class="text-xl font-semibold text-purple-700 mb-2">💊 Your Medications</h2>
+  <p class="text-sm text-gray-500 mb-4">Manage your prescriptions</p>
+
+  {% if all_meds %}
+    <ul class="space-y-4">
+      {% for med in all_meds %}
+        <li class="p-4 bg-gray-50 rounded flex justify-between items-center border border-gray-200">
+          <div>
+            <strong class="text-blue-700">{{ med.medicine_name }}</strong> — {{ med.dose_count }} doses(mg)<br />
+            <span class="text-xs text-gray-600">
+              {{ med.start_date }} → {{ med.end_date }} at {{ med.dose_time }}
+            </span>
+          </div>
+          <div class="flex space-x-2">
+            <a href="/edit-medicine/{{ med.id }}" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition">
+              Edit
+            </a>
+            <form action="/delete-medicine/{{ med.id }}" method="POST" onsubmit="return confirm('Are you sure?')">
+              <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
+                Delete
+              </button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="text-center text-gray-500 italic">
+      <p>No medications added yet.</p>
+      <a href="/add-medicine" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        + Add Medicine
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+
+<!-- Water Intake Tracker (Interactive with Time Schedule) -->
+<div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition" id="water-tracker">
+  <h2 class="text-xl font-semibold text-blue-600 mb-2">💧 Water Intake Tracker</h2>
+  <p class="text-sm text-gray-500 mb-4">Stay hydrated while on medication</p>
+
+  <!-- Progress Bar -->
+  <div class="relative w-full h-3 bg-blue-200 rounded-full overflow-hidden mb-4">
+    <div id="water-progress" class="absolute top-0 left-0 h-3 bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+  </div>
+  <p id="water-status" class="text-xs text-gray-500 mb-4 text-center">
+    0 / 8 bottles (0%)
+  </p>
+
+  <!-- Checkboxes for 8 bottles with suggested times -->
+  <div class="grid grid-cols-4 gap-4">
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 1</span>
+      <span class="text-[10px] text-gray-400">8:00 AM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 2</span>
+      <span class="text-[10px] text-gray-400">10:00 AM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 3</span>
+      <span class="text-[10px] text-gray-400">12:00 PM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 4</span>
+      <span class="text-[10px] text-gray-400">2:00 PM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 5</span>
+      <span class="text-[10px] text-gray-400">4:00 PM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 6</span>
+      <span class="text-[10px] text-gray-400">6:00 PM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 7</span>
+      <span class="text-[10px] text-gray-400">8:00 PM</span>
+    </label>
+
+    <label class="flex flex-col items-center space-y-1 cursor-pointer">
+      <input type="checkbox" class="water-checkbox hidden">
+      <div class="w-10 h-16 rounded-lg border-2 border-blue-300 flex items-center justify-center text-blue-500 text-xs">
+        🍼
+      </div>
+      <span class="text-xs text-gray-700 font-medium">Bottle 8</span>
+      <span class="text-[10px] text-gray-400">10:00 PM</span>
+    </label>
+  </div>
+
+  <p class="text-xs text-gray-400 mt-4 text-center">Target: 8 bottles per day</p>
+</div>
+
+<script>
+  const checkboxes = document.querySelectorAll("#water-tracker .water-checkbox");
+  const progressBar = document.getElementById("water-progress");
+  const statusText = document.getElementById("water-status");
+
+  function updateWaterProgress() {
+    let checkedCount = 0;
+    checkboxes.forEach(cb => {
+      if (cb.checked) checkedCount++;
+      const bottleDiv = cb.nextElementSibling;
+      if (cb.checked) {
+        bottleDiv.classList.add("bg-blue-500", "text-white");
+        bottleDiv.classList.remove("border-blue-300", "text-blue-500");
+      } else {
+        bottleDiv.classList.remove("bg-blue-500", "text-white");
+        bottleDiv.classList.add("border-blue-300", "text-blue-500");
+      }
+    });
+
+    const percent = Math.round((checkedCount / 8) * 100);
+    progressBar.style.width = percent + "%";
+    statusText.textContent = `${checkedCount} / 8 bottles (${percent}%)`;
+  }
+
+  checkboxes.forEach(cb => {
+    cb.parentElement.addEventListener("click", () => {
+      cb.checked = !cb.checked;
+      updateWaterProgress();
+    });
+  });
+
+  updateWaterProgress();
+</script>
+
+
+  <!-- Doctor Modal -->
+    <div id="doctorModal" class="fixed inset-0 hidden bg-black bg-opacity-50 z-50 items-center justify-center">
+      <div class="bg-white w-96 max-w-full p-6 rounded-lg shadow-xl">
+        <h2 class="text-xl font-semibold mb-4 text-purple-700">Doctor Details</h2>
+        {% if doctor %}
+          <p><strong>Name:</strong> {{ doctor.name }}</p>
+          <p><strong>Email:</strong> {{ doctor.email }}</p>
+          <p><strong>Phone:</strong> {{ doctor.phone }}</p>
+          <p><strong>Specialty:</strong> {{ doctor.specialization }}</p>
+          <p><strong>Next Checkup:</strong> {{ doctor.next_checkup_date }}</p>
+          <div class="mt-4 text-right">
+            <a href="/doctor-info" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Edit</a>
+            <button onclick="closeDoctorModal()" class="ml-2 text-blue-600 hover:underline">Close</button>
+          </div>
+        {% else %}
+          <p class="text-gray-500">No doctor information available.</p>
+          <div class="mt-4 text-right">
+            <a href="/doctor-info" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Doctor</a>
+            <button onclick="closeDoctorModal()" class="ml-2 text-blue-600 hover:underline">Close</button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 mt-8">
+      © 2025 MedTrack. All rights reserved.
+    </footer>
+
+  </main>
+
+  <!-- Modal Script -->
+  <script>
+    function showDoctorModal() {
+      const modal = document.getElementById('doctorModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeDoctorModal() {
+      const modal = document.getElementById('doctorModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ 'Edit' if doctor else 'Add' }} Doctor Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(to right, #dbeafe, #fce7f3); /* Soft blue → pink gradient */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 40px;
+      max-width: 480px;
+      width: 100%;
+      border-radius: 20px;
+      box-shadow: 0px 8px 25px rgba(0,0,0,0.1);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      color: #2563eb; /* Blue-600 */
+      margin-bottom: 25px;
+      font-weight: bold;
+      font-size: 1.8rem;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+      color: #374151; /* Gray-700 */
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db; /* Gray-300 */
+      margin-bottom: 18px;
+      font-size: 15px;
+      box-sizing: border-box;
+      transition: all 0.2s ease-in-out;
+    }
+
+    input:focus {
+      border-color: #a78bfa; /* Soft violet */
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.3);
+    }
+
+    button {
+      width: 100%;
+      background: linear-gradient(to right, #3b82f6, #8b5cf6); /* Blue → Purple */
+      color: white;
+      font-weight: bold;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #2563eb, #7c3aed); /* Slightly darker hover */
+      transform: scale(1.03);
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #6b7280; /* Gray-500 */
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      color: #374151; /* Darker gray on hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>{{ 'Edit' if doctor else 'Add' }} Doctor Details</h2>
+    <form method="POST">
+      <label>Name:</label>
+      <input type="text" name="name" value="{{ doctor.name if doctor else '' }}" required>
+
+      <label>Specialization:</label>
+      <input type="text" name="specialization" value="{{ doctor.specialization if doctor else '' }}" required>
+
+      <label>Phone:</label>
+      <input type="text" name="phone" value="{{ doctor.phone if doctor else '' }}" required>
+
+      <label>Email:</label>
+      <input type="email" name="email" value="{{ doctor.email if doctor else '' }}" required>
+
+      <label>Next Checkup Date:</label>
+      <input type="date" name="next_checkup_date" value="{{ doctor.next_checkup_date if doctor else '' }}" required>
+
+      <button type="submit">{{ 'Update' if doctor else 'Save' }}</button>
+    </form>
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+  </div>
+</body>
+</html>
