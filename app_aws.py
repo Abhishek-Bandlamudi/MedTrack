@@ -7,26 +7,26 @@ from boto3.dynamodb.conditions import Key, Attr
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
-# ✅ AWS Setup
+#  AWS Setup
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  # change AWS region if needed
 sns_client = boto3.client('sns', region_name='us-east-1')
 
-# ✅ DynamoDB tables
+# DynamoDB tables
 users_table = dynamodb.Table('Users')
 medications_table = dynamodb.Table('Medications')
 doctor_table = dynamodb.Table('DoctorInfo')
 
-# ✅ Home Page
+#  Home Page
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# ✅ Login Page
+# Login Page
 @app.route("/login")
 def login_page():
     return render_template("login.html")
 
-# ✅ Login Existing User
+#  Login Existing User
 @app.route("/login-existing", methods=["POST"])
 def login_existing():
     email = request.form["email"]
@@ -43,13 +43,13 @@ def login_existing():
 
     user = users[0]
 
-    # ✅ Store session values
+    #  Store session values
     session["user_id"] = user["user_id"]
     session["username"] = user["name"]
 
     return redirect(url_for("dashboard"))
 
-# ✅ Register New User
+# Register New User
 @app.route("/register", methods=["POST"])
 def register():
     name = request.form.get("name")
@@ -57,14 +57,14 @@ def register():
     password = request.form.get("password")
     created_at = str(date.today())
 
-    # ✅ Check if user already exists
+    # Check if user already exists
     response = users_table.scan(
         FilterExpression=Attr("email").eq(email)
     )
     if response['Items']:
         return "❌ Email already registered. <a href='/login'>Login</a>"
 
-    # ✅ Save user to DynamoDB
+    #  Save user to DynamoDB
     user_id = str(uuid.uuid4())
     users_table.put_item(Item={
         "user_id": user_id,
@@ -74,9 +74,9 @@ def register():
         "created_at": created_at
     })
 
-    return "✅ Account created successfully! <a href='/login'>Login now</a>"
+    return " Account created successfully! <a href='/login'>Login now</a>"
 
-# ✅ Dashboard
+# Dashboard
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -86,19 +86,19 @@ def dashboard():
     username = session["username"]
     today = str(date.today())
 
-    # ✅ Fetch ALL medications for this user
+    #  Fetch ALL medications for this user
     response = medications_table.query(
         KeyConditionExpression=Key('user_id').eq(user_id)
     )
     all_meds = response.get('Items', [])
 
-    # ✅ Filter today’s active meds (similar to MySQL WHERE start<=today<=end)
+    #  Filter today’s active meds (similar to MySQL WHERE start<=today<=end)
     today_meds = [
         m for m in all_meds
         if m['start_date'] <= today <= m['end_date']
     ]
 
-    # ✅ Fetch doctor info (if exists)
+    # Fetch doctor info (if exists)
     doc_response = doctor_table.get_item(Key={'user_id': user_id})
     doctor = doc_response.get('Item')
 
@@ -111,7 +111,7 @@ def dashboard():
         doctor=doctor
     )
 
-# ✅ Add Medicine
+#  Add Medicine
 @app.route("/add-medicine", methods=["GET", "POST"])
 def add_medicine():
     if "user_id" not in session:
@@ -126,7 +126,7 @@ def add_medicine():
         end_date = request.form["end_date"]
         frequency = request.form["frequency"]
 
-        # ✅ Insert into DynamoDB
+        #  Insert into DynamoDB
         medications_table.put_item(Item={
             "user_id": session["user_id"],
             "medicine_id": medicine_id,
@@ -148,7 +148,7 @@ def add_medicine():
 
     return render_template("add_medicine.html")
 
-# ✅ Edit Medicine
+#  Edit Medicine
 @app.route("/edit-medicine/<medicine_id>", methods=["GET", "POST"])
 def edit_medicine(medicine_id):
     if "user_id" not in session:
@@ -156,7 +156,7 @@ def edit_medicine(medicine_id):
 
     user_id = session["user_id"]
 
-    # ✅ Fetch medicine
+    # Fetch medicine
     response = medications_table.get_item(Key={'user_id': user_id, 'medicine_id': medicine_id})
     medicine = response.get('Item')
 
@@ -164,7 +164,7 @@ def edit_medicine(medicine_id):
         return "❌ Medicine not found!", 404
 
     if request.method == "POST":
-        # ✅ Overwrite updated item
+        #  Overwrite updated item
         medications_table.put_item(Item={
             "user_id": user_id,
             "medicine_id": medicine_id,
@@ -179,7 +179,7 @@ def edit_medicine(medicine_id):
 
     return render_template("edit_medicine.html", medicine=medicine)
 
-# ✅ Delete Medicine
+#  Delete Medicine
 @app.route("/delete-medicine/<medicine_id>", methods=["POST"])
 def delete_medicine(medicine_id):
     if "user_id" not in session:
@@ -190,7 +190,7 @@ def delete_medicine(medicine_id):
     )
     return redirect(url_for("dashboard"))
 
-# ✅ Doctor Info
+#  Doctor Info
 @app.route("/doctor-info", methods=["GET", "POST"])
 def doctor_info():
     if "user_id" not in session:
@@ -198,12 +198,12 @@ def doctor_info():
 
     user_id = session["user_id"]
 
-    # ✅ Fetch existing doctor details
+    #  Fetch existing doctor details
     doc_response = doctor_table.get_item(Key={'user_id': user_id})
     doctor = doc_response.get('Item')
 
     if request.method == "POST":
-        # ✅ Upsert doctor info
+        #  Upsert doctor info
         doctor_table.put_item(Item={
             "user_id": user_id,
             "name": request.form["name"],
@@ -216,7 +216,7 @@ def doctor_info():
 
     return render_template("doctor_info.html", doctor=doctor)
 
-# ✅ User Profile
+#  User Profile
 @app.route("/user")
 def user_profile():
     if "user_id" not in session:
@@ -228,7 +228,7 @@ def user_profile():
 
     return render_template("user_profile.html", username=user["name"], email=user["email"])
 
-# ✅ Logout
+#  Logout
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
