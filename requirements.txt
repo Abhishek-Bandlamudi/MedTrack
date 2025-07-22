@@ -1,5 +1,12 @@
+Flask
+mysql-connector-python
+Jinja2
+Werkzeug
+itsdangerous
+click
+MarkupSafe
 boto3
 date
 uuid
 datetime
-flask
+
