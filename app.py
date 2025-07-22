@@ -5,7 +5,7 @@ from datetime import date
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # needed for sessions
 
-# ✅ MySQL connection details
+#  MySQL connection details
 db_config = {
     "host": "localhost",
     "user": "root",           # change if needed
@@ -13,21 +13,21 @@ db_config = {
     "database": "medtrack_db"
 }
 
-# ✅ Helper function to get DB connection
+#  Helper function to get DB connection
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
-# ✅ Home Page
+#  Home Page
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# ✅ Login/Signup Page
+#  Login/Signup Page
 @app.route("/login")
 def login_page():
     return render_template("login.html")
 
-# ✅ Handle Existing User Login
+#  Handle Existing User Login
 @app.route("/login-existing", methods=["POST"])
 def login_existing():
     email = request.form["email"]
@@ -46,14 +46,14 @@ def login_existing():
     if not user or user["password"] != password:
         return render_template("login.html", error="Invalid email or password")
 
-    # ✅ Store session values
+    #  Store session values
     session["user_id"] = user["id"]
     session["username"] = user["name"]
 
-    # ✅ Redirect to dashboard
+    #  Redirect to dashboard
     return redirect(url_for("dashboard"))
 
-# ✅ Handle New User Registration
+#  Handle New User Registration
 @app.route("/register", methods=["POST"])
 def register():
     name = request.form.get("name")
@@ -70,14 +70,14 @@ def register():
         )
         conn.commit()
         conn.close()
-        return "✅ Account created successfully! <a href='/login'>Login now</a>"
+        return " Account created successfully! <a href='/login'>Login now</a>"
     except mysql.connector.Error as err:
         if err.errno == 1062:  # Duplicate email
             return "❌ Email already registered. <a href='/login'>Login</a>"
         else:
             return f"❌ Database error: {err}"
 
-# ✅ Dashboard
+# Dashboard
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -90,7 +90,7 @@ def dashboard():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # ✅ Fetch ONLY today's medicines (active between start_date & end_date)
+    #  Fetch ONLY today's medicines (active between start_date & end_date)
     cursor.execute("""
         SELECT * FROM medications 
         WHERE user_id=%s 
@@ -99,11 +99,11 @@ def dashboard():
     """, (user_id, today, today))
     today_meds = cursor.fetchall()
 
-    # ✅ Fetch ALL medications for this user
+    #  Fetch ALL medications for this user
     cursor.execute("SELECT * FROM medications WHERE user_id=%s ORDER BY start_date DESC", (user_id,))
     all_meds = cursor.fetchall()
 
-    # ✅ Fetch doctor info (if exists)
+    #  Fetch doctor info (if exists)
     cursor.execute("SELECT * FROM doctor_info WHERE user_id=%s", (user_id,))
     doctor = cursor.fetchone()
 
@@ -120,7 +120,7 @@ def dashboard():
     )
 
 
-# ✅ Show Add Medicine Form
+#show Add Medicine Form
 @app.route("/add-medicine", methods=["GET", "POST"])
 def add_medicine():
     if "user_id" not in session:
@@ -150,7 +150,7 @@ def add_medicine():
 
     return render_template("add_medicine.html")
 
-# ✅ Edit Medicine Route
+#  Edit Medicine Route
 @app.route("/edit-medicine/<int:med_id>", methods=["GET", "POST"])
 def edit_medicine(med_id):
     if "user_id" not in session:
@@ -191,7 +191,7 @@ def edit_medicine(med_id):
     conn.close()
     return render_template("edit_medicine.html", medicine=medicine)
 
-# ✅ Delete Medicine Route
+# Delete Medicine Route
 @app.route("/delete-medicine/<int:med_id>", methods=["POST"])
 def delete_medicine(med_id):
     if "user_id" not in session:
@@ -264,7 +264,7 @@ def user_profile():
 
     return render_template("user_profile.html", username=user["name"], email=user["email"])
 
-# ✅ Logout Route
+# Logout Route
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
