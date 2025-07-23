@@ -15,7 +15,7 @@ sns_client = boto3.client('sns', region_name='us-east-1')
 users_table = dynamodb.Table('Users')
 medications_table = dynamodb.Table('Medications')
 doctor_table = dynamodb.Table('DoctorInfo')
-
+sns_topic_arn = 'arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:MedTrackAlerts'
 #  Home Page
 @app.route("/")
 def home():
