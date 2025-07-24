@@ -119,7 +119,8 @@ def add_medicine():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        medicine_id = str(uuid.uuid4())  # sort key
+        # Generate unique ID for the medicine
+        medicine_id = str(uuid.uuid4())
         medicine_name = request.form["medicine_name"]
         dose_count = request.form["dose_count"]
         dose_time = request.form["dose_time"]
@@ -127,7 +128,7 @@ def add_medicine():
         end_date = request.form["end_date"]
         frequency = request.form["frequency"]
 
-        #  Insert into DynamoDB
+        # Store the medicine in DynamoDB
         medications_table.put_item(Item={
             "user_id": session["user_id"],
             "medicine_id": medicine_id,
@@ -139,15 +140,43 @@ def add_medicine():
             "frequency": frequency
         })
 
-        # Optional SNS notification
-        # sns_client.publish(
-        #     PhoneNumber="+91xxxxxxxxxx",
-        #     Message=f"New medicine '{medicine_name}' added!"
-        # )
+        # Get user email from DynamoDB
+        user_id = session["user_id"]
+        user_response = users_table.get_item(Key={'user_id': user_id})
+        user = user_response.get("Item")
+
+        if user and "email" in user:
+            user_email = user["email"]
+            try:
+                # Subscribe the user's email to the SNS topic
+                sns_client.subscribe(
+                    TopicArn=sns_topic_arn,
+                    Protocol='email',
+                    Endpoint=user_email
+                )
+                print(f"✅ SNS subscription email sent to {user_email}")
+
+                # Optional: Send a confirmation message for added medicine (initial notification)
+                sns_client.publish(
+                    TopicArn=sns_topic_arn,
+                    Subject="💊 MedTrack - Medicine Added",
+                    Message=(
+                        f"Hello {user['name']},\n\n"
+                        f"You have successfully added the medicine '{medicine_name}' to your MedTrack account.\n"
+                        f"Start Date: {start_date}\n"
+                        f"End Date: {end_date}\n"
+                        f"Dose Time: {dose_time}\n\n"
+                        f"Stay healthy!\n– MedTrack"
+                    )
+                )
+
+            except Exception as e:
+                print("❌ Error subscribing/sending via SNS:", str(e))
 
         return redirect(url_for("dashboard"))
 
     return render_template("add_medicine.html")
+
 
 #  Edit Medicine
 @app.route("/edit-medicine/<medicine_id>", methods=["GET", "POST"])
