@@ -140,23 +140,37 @@ def add_medicine():
             "frequency": frequency
         })
 
-        # Get user email from DynamoDB
+        # Fetch user info
         user_id = session["user_id"]
         user_response = users_table.get_item(Key={'user_id': user_id})
         user = user_response.get("Item")
 
         if user and "email" in user:
             user_email = user["email"]
-            try:
-                # Subscribe the user's email to the SNS topic
-                sns_client.subscribe(
-                    TopicArn=sns_topic_arn,
-                    Protocol='email',
-                    Endpoint=user_email
-                )
-                print(f"✅ SNS subscription email sent to {user_email}")
 
-                # Optional: Send a confirmation message for added medicine (initial notification)
+            try:
+                # ✅ Check if user is already subscribed
+                already_subscribed = user.get("sns_subscribed", False)
+
+                if not already_subscribed:
+                    # Subscribe the user's email ONLY ONCE
+                    sns_client.subscribe(
+                        TopicArn=sns_topic_arn,
+                        Protocol='email',
+                        Endpoint=user_email
+                    )
+                    print(f"✅ First-time SNS subscription email sent to {user_email}")
+
+                    # ✅ Update user record so we don't subscribe again
+                    users_table.update_item(
+                        Key={'user_id': user_id},
+                        UpdateExpression="set sns_subscribed = :val",
+                        ExpressionAttributeValues={':val': True}
+                    )
+                else:
+                    print(f"✅ User {user_email} already subscribed, skipping subscription")
+
+                # ✅ Always publish a medicine-added notification
                 sns_client.publish(
                     TopicArn=sns_topic_arn,
                     Subject="💊 MedTrack - Medicine Added",
@@ -171,11 +185,12 @@ def add_medicine():
                 )
 
             except Exception as e:
-                print("❌ Error subscribing/sending via SNS:", str(e))
+                print("❌ SNS Error:", str(e))
 
         return redirect(url_for("dashboard"))
 
     return render_template("add_medicine.html")
+
 
 
 #  Edit Medicine
