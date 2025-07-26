@@ -78,6 +78,15 @@ def register():
     return " Account created successfully! <a href='/login'>Login now</a>"
 
 # Dashboard
+from datetime import datetime
+
+def format_date(d):
+    """Convert YYYY-MM-DD → DD-MMM-YYYY (e.g. 2025-07-25 → 25-Jul-2025)"""
+    try:
+        return datetime.strptime(d, "%Y-%m-%d").strftime("%d-%b-%Y")
+    except Exception:
+        return d  # fallback to original if parsing fails
+
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -87,21 +96,34 @@ def dashboard():
     username = session["username"]
     today = str(date.today())
 
-    #  Fetch ALL medications for this user
+    # Fetch ALL medications for this user
     response = medications_table.query(
         KeyConditionExpression=Key('user_id').eq(user_id)
     )
     all_meds = response.get('Items', [])
 
-    #  Filter today’s active meds (similar to MySQL WHERE start<=today<=end)
+    # Filter today’s active meds (similar to MySQL WHERE start<=today<=end)
     today_meds = [
         m for m in all_meds
         if m['start_date'] <= today <= m['end_date']
     ]
 
+    # ✅ Format dates for consistent display
+    for med in all_meds:
+        med["start_date"] = format_date(med["start_date"])
+        med["end_date"] = format_date(med["end_date"])
+
+    for med in today_meds:
+        med["start_date"] = format_date(med["start_date"])
+        med["end_date"] = format_date(med["end_date"])
+
     # Fetch doctor info (if exists)
     doc_response = doctor_table.get_item(Key={'user_id': user_id})
     doctor = doc_response.get('Item')
+
+    # ✅ Format doctor’s next checkup date (if exists)
+    if doctor and "next_checkup_date" in doctor:
+        doctor["next_checkup_date"] = format_date(doctor["next_checkup_date"])
 
     return render_template(
         "dashboard.html",
@@ -111,6 +133,7 @@ def dashboard():
         all_meds=all_meds,
         doctor=doctor
     )
+
 
 #  Add Medicine
 @app.route("/add-medicine", methods=["GET", "POST"])
