@@ -4,7 +4,6 @@ Jinja2
 Werkzeug
 MarkupSafe
 boto3
-date
 uuid
 datetime
 
