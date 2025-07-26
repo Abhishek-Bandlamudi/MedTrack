@@ -10,7 +10,7 @@ app.secret_key = "your_secret_key"
 #  AWS Setup
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  # change AWS region if needed
 sns_client = boto3.client('sns', region_name='us-east-1')
-sns_topic_arn = 'arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:MedTrackAlerts'
+sns_topic_arn = 'arn:aws:sns:us-east-1:463470954496:medtrack-alerts'
 
 # DynamoDB tables
 users_table = dynamodb.Table('Users')
